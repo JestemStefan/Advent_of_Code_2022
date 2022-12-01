@@ -1,24 +1,24 @@
 import timeit
 
+
 def solution_part_1():
-    solution_part_1 = 0
+    solution = 0
 
     with open("input_data.txt") as file:
         for line in file:
             pass
 
-    return solution_part_1
+    return solution
 
 
 def solution_part_2():
-    solution_part_2 = 0
+    solution = 0
 
     with open("input_data.txt") as file:
         for line in file:
             pass
 
-
-    return solution_part_2
+    return solution
 
 
 if __name__ == "__main__":
