@@ -12,9 +12,10 @@ def solution_part_1():
             sequence_middle = len(data) // 2
             first_half, second_half = data[:sequence_middle], data[sequence_middle:]
 
-            common_element = [c for c in first_half if c in second_half]
-
-            solution += priority[common_element[0]]
+            for c in first_half:
+                if c in second_half:
+                    solution += priority[c]
+                    break
 
         return solution
 
@@ -29,9 +30,10 @@ def solution_part_2():
             second_elf = file.readline().strip()
             third_elf = file.readline().strip()
 
-            common_element = [c for c in first_elf if c in second_elf if c in third_elf]
-
-            solution += priority[common_element[0]]
+            for c in first_elf:
+                if c in second_elf and c in third_elf:
+                    solution += priority[c]
+                    break
 
         return solution
 
