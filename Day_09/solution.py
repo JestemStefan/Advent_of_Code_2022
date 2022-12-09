@@ -1,103 +1,102 @@
 import timeit
-from functools import reduce
 
 
-def intersect_ray(grid, grid_size, tree, row, column) -> int:
-    blocked_directions_count = 0
-    # Check outer ring
-    if row in [0, grid_size - 1] or column in [0, grid_size - 1]:
-        return 1
+class Position:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
-    for right_ray_idx in range(column + 1, grid_size):
-        if grid[row][right_ray_idx] >= tree:
-            blocked_directions_count += 1
-            break
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
 
-    # down raycast
-    for down_ray_idx in range(row + 1, grid_size):
-        if grid[down_ray_idx][column] >= tree:
-            blocked_directions_count += 1
-            break
-
-    # left raycast
-    for left_ray_idx in reversed(range(0, column)):
-        if grid[row][left_ray_idx] >= tree:
-            blocked_directions_count += 1
-            break
-
-    # up raycast
-    for up_ray_idx in reversed(range(0, row)):
-        if grid[up_ray_idx][column] >= tree:
-            blocked_directions_count += 1
-            break
-
-    return 0 if blocked_directions_count == 4 else 1
-
-
-def get_scenic_score(grid, grid_size, tree, row, column) -> int:
-    scenic_scores = []
-
-    right_score = 0
-    for right_ray_idx in range(column + 1, grid_size):
-        right_score += 1
-        if grid[row][right_ray_idx] >= tree:
-            break
-    scenic_scores.append(right_score)
-
-    # down raycast
-    down_score = 0
-    for down_ray_idx in range(row + 1, grid_size):
-        down_score += 1
-        if grid[down_ray_idx][column] >= tree:
-            break
-    scenic_scores.append(down_score)
-
-    # left raycast
-    left_score = 0
-    for left_ray_idx in reversed(range(0, column)):
-        left_score += 1
-        if grid[row][left_ray_idx] >= tree:
-            break
-    scenic_scores.append(left_score)
-
-    # up raycast
-    up_score = 0
-    for up_ray_idx in reversed(range(0, row)):
-        up_score += 1
-        if grid[up_ray_idx][column] >= tree:
-            break
-
-    scenic_scores.append(up_score)
-
-    return reduce(lambda x, y: x * y, scenic_scores)
+    def __hash__(self):
+        return hash((self.x, self.y))
 
 
 def solution_part_1():
     with open("input_data.txt") as file:
-        grid = [[t for t in map(int, row.strip())] for row in file]
-        grid_size = len(grid)
+        visited_locations = set()
+        head_pos = Position(0, 0)
+        tail_pos = Position(0, 0)
 
-        return sum(
-            intersect_ray(grid, grid_size, tree, row_idx, column_idx)
-            for row_idx, row in enumerate(grid)
-            for column_idx, tree in enumerate(row)
-        )
+        moves = {
+            "L": (-1, 0),
+            "R": (1, 0),
+            "U": (0, -1),
+            "D": (0, 1),
+        }
+
+        for line in file:
+            data = line.strip().split()
+            direction, distance = data[0], int(data[1])
+
+            for _ in range(distance):
+                move = moves[direction]
+                head_pos.x += move[0]
+                head_pos.y += move[1]
+                if abs(tail_pos.x - head_pos.x) > 1:
+                    tail_pos.x = head_pos.x - move[0]
+                    tail_pos.y = head_pos.y
+
+                elif abs(tail_pos.y - head_pos.y) > 1:
+                    tail_pos.y = head_pos.y - move[1]
+                    tail_pos.x = head_pos.x
+
+                new_tail_pos = Position(tail_pos.x, tail_pos.y)
+                visited_locations.add(new_tail_pos)
+
+    return len(visited_locations)
 
 
 def solution_part_2():
     with open("input_data.txt") as file:
-        grid = [[t for t in map(int, row.strip())] for row in file]
-        grid_size = len(grid)
+        visited_locations = set()
 
-        return max(
-            get_scenic_score(grid, grid_size, tree, row_idx, column_idx)
-            for row_idx, row in enumerate(grid)
-            for column_idx, tree in enumerate(row)
-        )
+        knots = [Position(0, 0) for i in range(10)]
+        moves = {
+            "L": (-1, 0),
+            "R": (1, 0),
+            "U": (0, -1),
+            "D": (0, 1),
+        }
+
+        for line in file:
+            data = line.strip().split()
+            direction, distance = data[0], int(data[1])
+
+            for _ in range(distance):
+                move = moves[direction]
+
+                head_pos = knots[0]
+                head_pos.x += move[0]
+                head_pos.y += move[1]
+
+                for i in range(len(knots) - 1):
+                    _head = knots[i]
+                    _tail = knots[i + 1]
+
+                    move_h = _head.x - _tail.x
+                    move_v = _head.y - _tail.y
+
+                    if abs(move_h) > 1 and abs(move_v) > 1:
+                        _tail.x += move_h // 2
+                        _tail.y += move_v // 2
+
+                    elif abs(move_h) > 1:
+                        _tail.x += move_h // 2
+                        _tail.y = _head.y
+
+                    elif abs(move_v) > 1:
+                        _tail.y += move_v // 2
+                        _tail.x = _head.x
+
+                    visited_locations.add(Position(knots[9].x, knots[9].y))
+
+    return len(visited_locations)
 
 
 if __name__ == "__main__":
-    times = 1000
+    times = 100
     print(
         f"Solution Part 1 = {solution_part_1()}, "
         f'Time = {timeit.timeit("solution_part_1()", globals=locals(), number=times)/(times) * 1000} ms'
