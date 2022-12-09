@@ -97,7 +97,7 @@ def solution_part_2():
 
 
 if __name__ == "__main__":
-    times = 1
+    times = 1000
     print(
         f"Solution Part 1 = {solution_part_1()}, "
         f'Time = {timeit.timeit("solution_part_1()", globals=locals(), number=times)/(times) * 1000} ms'
